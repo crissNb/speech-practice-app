@@ -1,8 +1,10 @@
+const PUNCTUATION_REGEX = /[^\w\s]|_/g;
+
 function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minSkipThreshold = 3) {
     // Initialize wordStates array if it doesn't exist
     if (!wordStates || wordStates.length === 0) {
         wordStates = script.map(word => ({
-            word: word.replace(/[.,\/#!\“?$\”\"\'%\^&\*;:{}=\-_`~()]/g, "").toLowerCase(),
+            word: word.replace(PUNCTUATION_REGEX, '').toLowerCase().trim(),
             state: "unspoken",
             lastMatchTime: 0
         }));
@@ -37,7 +39,6 @@ function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minS
     }
 
     let skipCounter = 0;
-    console.log(wordStates);
 
     // Find matching word in script
     for (let j = 0; j < words.length; j++) {

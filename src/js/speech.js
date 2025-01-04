@@ -24,6 +24,7 @@ if (checkSpeechRecognitionSupport()) {
     recognition.lang = "en-US";
 
     recognition.onresult = function(event) {
+        // Create a transcript of the speech recognition results as an array of words
         const transcript = Array.from(event.results)
             .map(result => result[0].transcript)
             .join(' ');
@@ -95,6 +96,8 @@ function addListeners() {
             }
 
             startRecording();
+            this.textContent = 'Stop Recording';
+            this.classList.add('recording');
         } else {
             stopRecording();
             this.textContent = 'Start Recording';
@@ -156,7 +159,7 @@ function realTimeFeedback() {
     let wordsSpoken = 0;
     
     // Get words spoken by getting the index of the last spoken word
-    for (let i = spokenWords.length - 1; k >= 0; i--) {
+    for (let i = spokenWords.length - 1; i >= 0; i--) {
         if (spokenWords[i].state === 'spoken') {
             wordsSpoken = i + 1;
         }
