@@ -34,14 +34,31 @@
         </div>
 
         <div class="display-section" id="scriptDisplay">
-            <!-- Words will be inserted here by JavaScript -->
         </div>
 
         <div class="feedback" id="feedback">
-            <!-- Feedback messages will appear here -->
         </div>
     </div>
 
+    <div id="timeModal" class="modal">
+        <div class="modal-content">
+            <h2>Set Target Time</h2>
+            <p>Provided target time is empty/invalid. Would you like to use the estimated time of <span id="modalEstimatedTime">0</span> seconds?</p>
+            <div class="modal-buttons">
+                <button id="useEstimatedTime">Use Estimated Time</button>
+                <button id="cancelModal">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <div id="warningModal" class="modal">
+        <div class="modal-content warning">
+            <h2>Warning</h2>
+            <p>Please enter some text before starting recording.</p>
+            <div class="modal-buttons">
+                <button id="okWarning">OK</button>
+            </div>
+        </div>
+    </div>
     <script src="js/timer.js"></script>
     <script src="js/speech.js"></script>
     <script src="js/wordAnalysis.js"></script>

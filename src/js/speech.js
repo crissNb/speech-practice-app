@@ -12,7 +12,7 @@ let isRecording = false;
 let currentWordIndex = 0;
 let scriptWords = [];
 let spokenWords;
-let targetTime = 60;
+let targetTime = -1;
 
 // Initialize Speech Recognition API
 let recognition = null;
@@ -28,11 +28,14 @@ if (checkSpeechRecognitionSupport()) {
             .map(result => result[0].transcript)
             .join(' ');
         
+        if (!timer.isRunning) {
+            timer.start();
+        }
+        
         const words = transcript.split(' ');
-        console.log(words);
         spokenWords = matchWords(scriptWords, words, spokenWords);
         updateWordHighlighting();
-        checkSpeakingSpeed();
+        realTimeFeedback();
     };
 
 
@@ -57,9 +60,41 @@ function checkSpeechRecognitionSupport() {
 function addListeners() {
     recordButton.addEventListener('click', function() {
         if (!isRecording) {
+            // check if script is empty
+            if (!scriptInput.value.trim()) {
+                const warningModal = document.getElementById('warningModal');
+                warningModal.style.display = 'block';
+                
+                document.getElementById('okWarning').onclick = function() {
+                    warningModal.style.display = 'none';
+                };
+                return;
+            }
+
+            // check if target time is empty
+            if (!targetTimeInput.value) {
+                const modal = document.getElementById('timeModal');
+                const modalEstTime = document.getElementById('modalEstimatedTime');
+                const estimatedSeconds = estimateSpeechLength(scriptInput.value);
+                
+                modalEstTime.textContent = estimatedSeconds;
+                modal.style.display = 'block';
+                
+                // user can also use estimated time as target time, if not provided
+                document.getElementById('useEstimatedTime').onclick = function() {
+                    targetTime.value = estimatedSeconds;
+                    modal.style.display = 'none';
+                    startRecording();
+                };
+                
+                document.getElementById('cancelModal').onclick = function() {
+                    modal.style.display = 'none';
+                };
+                
+                return;
+            }
+
             startRecording();
-            this.textContent = 'Stop Recording';
-            this.classList.add('recording');
         } else {
             stopRecording();
             this.textContent = 'Start Recording';
@@ -81,7 +116,6 @@ function addListeners() {
 
 function startRecording() {
     recognition.start();
-    timer.start();
     currentWordIndex = 0;
     scriptWords = scriptInput.value.trim().split(/[\s-]+/);
     spokenWords = [];
@@ -115,14 +149,30 @@ function updateWordHighlighting() {
     });
 }
 
-function checkSpeakingSpeed() {
+function realTimeFeedback() {
     const elapsedTime = timer.elapsedTime / 1000;
-    const wordsSpoken = spokenWords.totalWordCount;
     const totalWords = scriptWords.length;
+
+    let wordsSpoken = 0;
+    
+    // Get words spoken by getting the index of the last spoken word
+    for (let i = spokenWords.length - 1; k >= 0; i--) {
+        if (spokenWords[i].state === 'spoken') {
+            wordsSpoken = i + 1;
+        }
+    }
+    
+    // Check last 20 words for clarity
+    const lastTwentyWords = spokenWords.slice(Math.max(0, wordsSpoken - 20), wordsSpoken);
+    const missedWords = lastTwentyWords.filter(word => word.state === 'missed').length;
+    const missedRatio = missedWords / lastTwentyWords.length;
     
     const expectedWordsAtCurrentTime = (totalWords * elapsedTime) / targetTime;
     
-    if (wordsSpoken < expectedWordsAtCurrentTime - 5) {
+    if (missedRatio > 0.3) { // If more than 30% of last 20 words were missed
+        feedbackElement.textContent = 'Speak more clearly!';
+        feedbackElement.className = 'feedback too-unclear';
+    } else if (wordsSpoken < expectedWordsAtCurrentTime - 5) {
         feedbackElement.textContent = 'Speak faster!';
         feedbackElement.className = 'feedback too-slow';
     } else if (wordsSpoken > expectedWordsAtCurrentTime + 5) {

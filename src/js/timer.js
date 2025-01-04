@@ -2,8 +2,10 @@ function Timer() {
     this.startTime = 0;
     this.elapsedTime = 0;
     this.timerInterval = null;
+    this.isRunning = false;
 
     this.start = function() {
+        this.isRunning = true;
         this.startTime = Date.now() - this.elapsedTime;
         this.timerInterval = setInterval(() => {
             this.elapsedTime = Date.now() - this.startTime;
@@ -13,6 +15,7 @@ function Timer() {
 
     this.stop = function() {
         clearInterval(this.timerInterval);
+        this.isRunning = false;
     };
 
     this.reset = function() {
