@@ -142,6 +142,39 @@ function updateScriptDisplay(text) {
 function stopRecording() {
     recognition.stop();
     timer.stop();
+
+    const results = analyzeResults(spokenWords, targetTime);
+    showResults(results);
+}
+
+function showResults(results) {
+    const resultsModal = document.getElementById('resultsModal');
+    
+    document.getElementById('accuracyResult').innerHTML = 
+        `${results.accuracyPercentage}%<br><small>of words spoken correctly</small>`;
+    
+    document.getElementById('timingResult').innerHTML = 
+        `${results.actualDuration}s / ${results.targetTime}s<br><small>actual/target time</small>`;
+    
+    document.getElementById('missedResult').innerHTML = 
+        `${results.missedPercentage}%<br><small>${results.missedWords} words</small>`;
+    
+    document.getElementById('skippedResult').innerHTML = 
+        `${results.skippedPercentage}%<br><small>${results.skippedWords} words</small>`;
+    
+    const timeline = document.getElementById('paceTimeline');
+    timeline.innerHTML = results.paceAnalysis.map(segment => `
+        <div class="pace-segment ${segment.state}">
+            <strong>${Math.round(segment.start)}s - ${Math.round(segment.end)}s:</strong>
+            ${segment.words.join(' ')}
+        </div>
+    `).join('');
+    
+    resultsModal.style.display = 'block';
+    
+    document.getElementById('closeResults').onclick = function() {
+        resultsModal.style.display = 'none';
+    };
 }
 
 function updateWordHighlighting() {

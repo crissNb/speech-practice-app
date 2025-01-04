@@ -59,6 +59,36 @@
             </div>
         </div>
     </div>
+    <div id="resultsModal" class="modal">
+        <div class="modal-content results">
+            <h2>Speech Analysis Results</h2>
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>Accuracy</h3>
+                    <div class="result-stat" id="accuracyResult"></div>
+                </div>
+                <div class="result-card">
+                    <h3>Timing</h3>
+                    <div class="result-stat" id="timingResult"></div>
+                </div>
+                <div class="result-card">
+                    <h3>Missed Words</h3>
+                    <div class="result-stat" id="missedResult"></div>
+                </div>
+                <div class="result-card">
+                    <h3>Skipped Words</h3>
+                    <div class="result-stat" id="skippedResult"></div>
+                </div>
+            </div>
+            <div class="pace-analysis">
+                <h3>Pace Analysis</h3>
+                <div id="paceTimeline"></div>
+            </div>
+            <div class="modal-buttons">
+                <button id="closeResults">Close</button>
+            </div>
+        </div>
+    </div>
     <script src="js/timer.js"></script>
     <script src="js/speech.js"></script>
     <script src="js/wordAnalysis.js"></script>

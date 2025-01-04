@@ -99,3 +99,62 @@ function estimateSpeechLength(script, averageWordDuration = 0.5) {
     const wordCount = calculateWordCount(script);
     return wordCount * averageWordDuration;
 }
+
+function analyzeResults(spokenWords, targetTime) {
+    const totalWords = spokenWords.length;
+    const missedWords = spokenWords.filter(w => w.state === 'missed').length;
+    const skippedWords = spokenWords.filter(w => w.state === 'skipped').length;
+    const spokenWordsCount = spokenWords.filter(w => w.state === 'spoken').length;
+    
+    const lastTime = Math.max(...spokenWords.filter(w => w.state === 'spoken').map(w => w.lastMatchTime));
+    const firstTime = Math.min(...spokenWords.filter(w => w.state === 'spoken').map(w => w.lastMatchTime));
+    const actualDuration = (lastTime - firstTime) / 1000; // in seconds
+    
+    // Analyze pace variations
+    const paceAnalysis = [];
+    const expectedWordsPerSecond = totalWords / targetTime;
+    let currentSegment = { start: 0, end: 0, state: 'normal', words: [] };
+    
+    spokenWords.forEach((word, index) => {
+        if (word.state === 'spoken') {
+            const prevTime = index > 0 ? spokenWords[index - 1].lastMatchTime : firstTime;
+            const timeDiff = (word.lastMatchTime - prevTime) / 1000;
+            const wordsPerSecond = 1 / timeDiff;
+            
+            const paceState = wordsPerSecond > expectedWordsPerSecond * 1.2 ? 'too-fast' :
+                             wordsPerSecond < expectedWordsPerSecond * 0.8 ? 'too-slow' : 'normal';
+                             
+            if (paceState !== currentSegment.state) {
+                if (currentSegment.words.length > 0) {
+                    paceAnalysis.push(currentSegment);
+                }
+                currentSegment = {
+                    start: prevTime - firstTime,
+                    end: word.lastMatchTime - firstTime,
+                    state: paceState,
+                    words: [word.word]
+                };
+            } else {
+                currentSegment.end = word.lastMatchTime - firstTime;
+                currentSegment.words.push(word.word);
+            }
+        }
+    });
+    
+    if (currentSegment.words.length > 0) {
+        paceAnalysis.push(currentSegment);
+    }
+
+    return {
+        totalWords,
+        missedWords,
+        skippedWords,
+        spokenWordsCount,
+        missedPercentage: (missedWords / totalWords * 100).toFixed(1),
+        skippedPercentage: (skippedWords / totalWords * 100).toFixed(1),
+        accuracyPercentage: (spokenWordsCount / totalWords * 100).toFixed(1),
+        targetTime,
+        actualDuration: actualDuration.toFixed(1),
+        paceAnalysis
+    };
+}
