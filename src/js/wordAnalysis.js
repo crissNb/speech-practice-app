@@ -1,8 +1,8 @@
-function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300) {
+function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minSkipThreshold = 3) {
     // Initialize wordStates array if it doesn't exist
     if (!wordStates || wordStates.length === 0) {
         wordStates = script.map(word => ({
-            word: word.replace(/[.,\/#!?$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase(),
+            word: word.replace(/[.,\/#!\“?$\”\"\'%\^&\*;:{}=\-_`~()]/g, "").toLowerCase(),
             state: "unspoken",
             lastMatchTime: 0
         }));
@@ -15,36 +15,52 @@ function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300) {
     // Get last spoken word in lowercase
     const currentTime = Date.now();
 
+    // Find last word that was spoken
+    let lastSpokenIndex = 0;
+    let lastSpokenTime = currentTime;
+    for (let k = wordStates.length - 1; k >= 0; k--) {
+        if (wordStates[k].state === "spoken") {
+            lastSpokenTime = wordStates[k].lastMatchTime;
+            lastSpokenIndex = k;
+            break;
+        }
+    }
+
+    // Remove words that have already been spoken
+    for (let i = 0; i < wordStates.length; i++) {
+        for (let j = 0; j < words.length; j++) {
+            if (wordStates[i].word === words[j].toLowerCase() && wordStates[i].state === "spoken") {
+                words.splice(j, 1);
+                break;
+            }
+        }
+    }
+
+    let skipCounter = 0;
+    console.log(wordStates);
+
     // Find matching word in script
-    let matchedWord;
-    let matchedWordIndex = -1;
     for (let j = 0; j < words.length; j++) {
         for (let i = 0; i < wordStates.length; i++) {
-            if (wordStates[i].word === words[j].toLowerCase()) {
-
-                if (wordStates[i].state === "spoken") {
-                    break;
-                }
-
-                // Find last word that was spoken
-                let lastSpokenTime = 0;
-                let lastSpokenIndex = -1;
-                for (let j = wordStates.length - 1; j >= 0; j--) {
-                    if (wordStates[j].state === "spoken") {
-                        lastSpokenTime = wordStates[j].lastMatchTime;
-                        lastSpokenIndex = j;
+            if (wordStates[i].word === words[j].toLowerCase() && wordStates[i].state !== "skipped" && wordStates[i].state !== "spoken") {
+                // Check if user is skipping words
+                if (currentTime - lastSpokenTime < minSpeakTimeThreshold * (i - lastSpokenIndex) && i - lastSpokenIndex > minSkipThreshold) {
+                    skipCounter++;
+                    console.log(skipCounter + " skips, due to: " + wordStates[i].word + " reason: " + (currentTime - lastSpokenTime) + " < " + minSpeakTimeThreshold * (i - lastSpokenIndex));
+                    if (skipCounter > minSkipThreshold) {
+                        // User has skipped words and said the matching words more than three times
+                        for (let k = lastSpokenIndex + 1; k < i - minSkipThreshold; k++) {
+                            if (wordStates[k].state === "unspoken") {
+                                updateWordStates(wordStates[k], "skipped", currentTime);
+                            }
+                        }
+                    } else {
+                        break;
                     }
                 }
 
-                // Check if user is skipping words
-                if (currentTime - lastSpokenTime < minSpeakTimeThreshold * (i - lastSpokenIndex)) {
-                    break;
-                }
-
-                matchedWord = wordStates[i];
-
                 // Mark word as spoken and update timestamp
-                updateWordStates(matchedWord, "spoken", currentTime);
+                updateWordStates(wordStates[i], "spoken", currentTime);
 
                 // Mark previous unspoken words as missed
                 for (let k = 0; k < i; k++) {

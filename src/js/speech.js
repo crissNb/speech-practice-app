@@ -12,6 +12,7 @@ let isRecording = false;
 let currentWordIndex = 0;
 let scriptWords = [];
 let spokenWords;
+let targetTime = 60;
 
 // Initialize Speech Recognition API
 let recognition = null;
@@ -30,7 +31,6 @@ if (checkSpeechRecognitionSupport()) {
         const words = transcript.split(' ');
         console.log(words);
         spokenWords = matchWords(scriptWords, words, spokenWords);
-        console.log(spokenWords);
         updateWordHighlighting();
         checkSpeakingSpeed();
     };
@@ -109,18 +109,13 @@ function stopRecording() {
 
 function updateWordHighlighting() {
     const wordElements = scriptDisplay.getElementsByClassName('word');
-    
     Array.from(wordElements).forEach((element, index) => {
-        if (element.classList.contains('unspoken')) {
-            element.classList.remove('unspoken');
-            element.classList.add(spokenWords[index].state);
-            return;
-        }
+        element.classList.remove('unspoken', 'spoken', 'missed', 'skipped');
+        element.classList.add(spokenWords[index].state);
     });
 }
 
 function checkSpeakingSpeed() {
-    const targetTime = parseInt(targetTimeInput.value) || 60;
     const elapsedTime = timer.elapsedTime / 1000;
     const wordsSpoken = spokenWords.totalWordCount;
     const totalWords = scriptWords.length;

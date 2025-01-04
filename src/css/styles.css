@@ -96,6 +96,11 @@ body {
     background-color: #ffd700;
 }
 
+.word.skipped {
+    color: #000;
+    background-color: #ffa76d;
+}
+
 .feedback {
     padding: 1rem;
     border-radius: 5px;
