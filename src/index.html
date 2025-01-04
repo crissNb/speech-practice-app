@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Practice App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Speech Practice Helper</h1>
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <p>Speech Recognition is not supported in your browser.</p>
+                <p>Supported Browser: Chrome, Edge, Safari</p>
+            </div>
+        
+        <div class="input-section">
+            <textarea id="scriptInput" placeholder="Enter your script here..."></textarea>
+            <div class="stats">
+                <div class="stat-item">
+                    <div id="wordCount">Word Count: 0</div>
+                    <div id="estimatedTime">Estimated Time: 0s</div>
+                </div>
+                <div class="stat-item">
+                    <label for="targetTime">Target Time (seconds):</label>
+                    <input type="number" id="targetTime" min="1">
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="recordButton">Start Recording</button>
+            <div class="timer" id="timer">00:00</div>
+        </div>
+
+        <div class="display-section" id="scriptDisplay">
+            <!-- Words will be inserted here by JavaScript -->
+        </div>
+
+        <div class="feedback" id="feedback">
+            <!-- Feedback messages will appear here -->
+        </div>
+    </div>
+
+    <script src="js/timer.js"></script>
+    <script src="js/speech.js"></script>
+    <script src="js/wordAnalysis.js"></script>
+</body>
+</html>
