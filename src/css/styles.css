@@ -43,6 +43,15 @@ h1 {
     text-align: center;
 }
 
+h1 + p {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+}
+
 .app-layout {
     display: grid;
     gap: 2rem;
@@ -321,4 +330,52 @@ h1 {
 .pace-segment.unclear {
     background-color: #fff0f0;
     border-left: 4px solid #cc0066;
+}
+.how-to-section {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.how-to-toggle {
+    width: 100%;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.how-to-content {
+    display: none;
+    padding: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.how-to-content.show {
+    display: block;
+}
+
+.how-to-content ol {
+    padding-left: 1.5rem;
+}
+
+.how-to-content li {
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.how-to-toggle[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
 }

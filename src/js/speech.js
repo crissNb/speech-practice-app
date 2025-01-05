@@ -45,7 +45,7 @@ if (checkSpeechRecognitionSupport()) {
 
 // Check if Speech Recognition API is supported by browser and display error message if not
 function checkSpeechRecognitionSupport() {
-    const errorMessage = document.getElementById('errorMessage');
+    const errorMessage = document.getElementById('errorModal');
     
     if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
         // Speech recognition API not supported by browser
@@ -59,6 +59,17 @@ function checkSpeechRecognitionSupport() {
 }
 
 function addListeners() {
+    document.addEventListener('DOMContentLoaded', function() {
+        const howToToggle = document.getElementById('howToToggle');
+        const howToContent = document.getElementById('howToContent');
+    
+        howToToggle.addEventListener('click', () => {
+            const isExpanded = howToToggle.getAttribute('aria-expanded') === 'true';
+            howToToggle.setAttribute('aria-expanded', !isExpanded);
+            howToContent.classList.toggle('show');
+        });
+    });
+
     recordButton.addEventListener('click', function() {
         const that = this;
         if (!isRecording) {

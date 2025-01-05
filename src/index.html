@@ -9,11 +9,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>Speech Practice Helper</h1>
+        <h1>Speech Practice Helper</h1> 
+        <p>Practice your speech and get feedback on your accuracy, timing, and pace.</p>
         
-        <div id="errorMessage" class="error-message" style="display: none;">
-            <p>Speech Recognition is not supported in your browser.</p>
-            <p>Supported Browser: Chrome, Edge, Safari</p>
+        <div class="how-to-section">
+            <button id="howToToggle" class="how-to-toggle">
+                How to Use <span class="toggle-icon">▼</span>
+            </button>
+            <div id="howToContent" class="how-to-content">
+                <ol>
+                    <li>Enter your speech text in the input area</li>
+                    <li>Set your target time (or leave blank and use the estimated time)</li>
+                    <li>Click "Start Recording" when ready</li>
+                    <li>Practice your speech - the app will track your words</li>
+                    <li>Receive realtime feedback on your speech</li>
+                    <li>View your results for accuracy, timing, and pace</li>
+                </ol>
+            </div>
         </div>
         
         <div class="app-layout">
@@ -40,6 +52,14 @@
                 <div class="feedback" id="feedback"></div>
             </div>
         </div>
+    </div>
+
+    <div id="errorModal" class="modal">
+        <div class="modal-content error">
+            <h2>Error</h2>
+            <p>Speech Recognition is not supported in your browser.</p>
+            <p>Supported Browser: Chrome, Edge, Safari</p>
+        </div>>
     </div>
 
     <div id="timeModal" class="modal">
