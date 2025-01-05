@@ -106,7 +106,10 @@ function _updateWordStates(wordState, newWordState, matchTime) {
     }
 
     wordState.state = newWordState;
-    wordState.lastMatchTime = matchTime;
+
+    if (wordState.state === "unspoken") {
+        wordState.lastMatchTime = matchTime;
+    }
     return wordState;
 }
 

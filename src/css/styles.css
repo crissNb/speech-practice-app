@@ -172,6 +172,25 @@ h1 + p {
     border-radius: 8px;
     text-align: center;
     font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.feedback.too-unclear {
+    background-color: #fef3c7;
+    border-left: 4px solid #d97706;
+    color: #92400e;
+}
+
+.feedback.too-slow {
+    background-color: #e6ffe6;
+    border-left: 4px solid #166534;
+    color: #166534;
+}
+
+.feedback.too-fast {
+    background-color: #fee2e2;
+    border-left: 4px solid #dc2626;
+    color: #991b1b;
 }
 
 .modal {
@@ -319,7 +338,7 @@ h1 + p {
 
 .pace-segment.too-slow {
     background-color: #e6ffe6;
-    border-left: 4px solid #006600;
+    border-left: 4px solid #d4b31e;
 }
 
 .pace-segment.normal {
@@ -331,6 +350,48 @@ h1 + p {
     background-color: #fff0f0;
     border-left: 4px solid #cc0066;
 }
+
+.pace-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1rem 0;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legend-item.too-fast .legend-color {
+    background-color: #ffe6e6;
+    border-left: 3px solid #cc0000;
+}
+
+.legend-item.too-slow .legend-color {
+    background-color: #e6ffe6;
+    border-left: 3px solid #d4b31e;
+}
+
+.legend-item.normal .legend-color {
+    background-color: #e6f3ff;
+    border-left: 3px solid #0066cc;
+}
+
+.legend-item.unclear .legend-color {
+    background-color: #fff0f0;
+    border-left: 3px solid #cc0066;
+}
+
 .how-to-section {
     max-width: 800px;
     margin: 2rem auto;
@@ -357,10 +418,36 @@ h1 + p {
     display: none;
     padding: 1.5rem;
     border-top: 1px solid #e2e8f0;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
 }
 
 .how-to-content.show {
     display: block;
+    opacity: 1;
+    max-height: 500px;
+    animation: slideDown 0.3s ease-in-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.how-to-toggle[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
 }
 
 .how-to-content ol {
@@ -370,12 +457,4 @@ h1 + p {
 .how-to-content li {
     margin-bottom: 0.75rem;
     color: var(--text-secondary);
-}
-
-.toggle-icon {
-    transition: transform 0.3s ease;
-}
-
-.how-to-toggle[aria-expanded="true"] .toggle-icon {
-    transform: rotate(180deg);
 }

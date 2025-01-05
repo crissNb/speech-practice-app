@@ -207,9 +207,12 @@ function realTimeFeedback() {
     let wordsSpoken = 0;
     
     // Get words spoken by getting the index of the last spoken word
+    // This is more accurate than counting the number of spoken words
+    // because some words may be skipped
     for (let i = spokenWords.length - 1; i >= 0; i--) {
         if (spokenWords[i].state === 'spoken') {
             wordsSpoken = i + 1;
+            break;
         }
     }
     
