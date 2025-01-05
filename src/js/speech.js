@@ -24,6 +24,10 @@ if (checkSpeechRecognitionSupport()) {
     recognition.lang = "en-US";
 
     recognition.onresult = function(event) {
+        if (!isRecording) {
+            return; 
+        }
+
         // Create a transcript of the speech recognition results as an array of words
         const transcript = Array.from(event.results)
             .map(result => result[0].transcript)
@@ -134,6 +138,7 @@ function addListeners() {
 }
 
 function startRecording() {
+    timer.reset();
     recognition.start();
     isRecording = true;
     currentWordIndex = 0;
@@ -157,9 +162,9 @@ function updateScriptDisplay(text) {
 }
 
 function stopRecording() {
+    isRecording = false;
     recognition.stop();
     timer.stop();
-    isRecording = false;
 
     const results = analyzeResults(spokenWords, targetTime, scriptInput.value);
     showResults(results);

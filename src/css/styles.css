@@ -142,6 +142,7 @@ h1 + p {
     font-weight: 700;
     color: var(--primary-color);
     font-variant-numeric: tabular-nums;
+    display: none;
 }
 
 .display-section {
