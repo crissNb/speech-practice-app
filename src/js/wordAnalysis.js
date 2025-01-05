@@ -76,7 +76,7 @@ function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minS
                         // User has skipped words and said the matching words more than three times
                         for (let k = lastSpokenIndex + 1; k < i - minSkipThreshold; k++) {
                             if (wordStates[k].state === "unspoken") {
-                                updateWordStates(wordStates[k], "skipped", currentTime);
+                                _updateWordStates(wordStates[k], "skipped", currentTime);
                             }
                         }
                     } else {
