@@ -47,7 +47,6 @@ function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minS
                 // Check if user is skipping words
                 if (currentTime - lastSpokenTime < minSpeakTimeThreshold * (i - lastSpokenIndex) && i - lastSpokenIndex > minSkipThreshold) {
                     skipCounter++;
-                    console.log(skipCounter + " skips, due to: " + wordStates[i].word + " reason: " + (currentTime - lastSpokenTime) + " < " + minSpeakTimeThreshold * (i - lastSpokenIndex));
                     if (skipCounter > minSkipThreshold) {
                         // User has skipped words and said the matching words more than three times
                         for (let k = lastSpokenIndex + 1; k < i - minSkipThreshold; k++) {
@@ -100,11 +99,10 @@ function estimateSpeechLength(script, averageWordDuration = 0.5) {
     return wordCount * averageWordDuration;
 }
 
-function analyzeResults(spokenWords, targetTime) {
+function analyzeResults(spokenWords, targetTime, originalScript) {
     const totalWords = spokenWords.length;
-    const missedWords = spokenWords.filter(w => w.state === 'missed').length;
     const skippedWords = spokenWords.filter(w => w.state === 'skipped').length;
-    const spokenWordsCount = spokenWords.filter(w => w.state === 'spoken').length;
+    const spokenWordsCount = spokenWords.filter(w => w.state === 'spoken' || w.state === 'skipped').length;
     
     const lastTime = Math.max(...spokenWords.filter(w => w.state === 'spoken').map(w => w.lastMatchTime));
     const firstTime = Math.min(...spokenWords.filter(w => w.state === 'spoken').map(w => w.lastMatchTime));
@@ -112,45 +110,57 @@ function analyzeResults(spokenWords, targetTime) {
     
     // Analyze pace variations
     const paceAnalysis = [];
-    const expectedWordsPerSecond = totalWords / targetTime;
-    let currentSegment = { start: 0, end: 0, state: 'normal', words: [] };
+    const sentences = originalScript.split(/[.!?]+/).filter(s => s.trim());
+    let wordIndex = 0;
     
-    spokenWords.forEach((word, index) => {
-        if (word.state === 'spoken') {
-            const prevTime = index > 0 ? spokenWords[index - 1].lastMatchTime : firstTime;
-            const timeDiff = (word.lastMatchTime - prevTime) / 1000;
-            const wordsPerSecond = 1 / timeDiff;
+    // Analyze each sentence
+    sentences.forEach(sentence => {
+        const sentenceWords = sentence.trim().split(/\s+/);
+        const sentenceLength = sentenceWords.length;
+        
+        // Get spoken words for this sentence
+        const sentenceSpokenWords = spokenWords.slice(wordIndex, wordIndex + sentenceLength);
+        
+        // Get timing data
+        const spokenInSentence = sentenceSpokenWords.filter(w => w.state === 'spoken');
+        if (spokenInSentence.length > 0) {
+            const sentenceStart = Math.min(...spokenInSentence.map(w => w.lastMatchTime));
+            const sentenceEnd = Math.max(...spokenInSentence.map(w => w.lastMatchTime));
+            const actualTime = (sentenceEnd - sentenceStart) / 1000; // convert to seconds
             
-            const paceState = wordsPerSecond > expectedWordsPerSecond * 1.2 ? 'too-fast' :
-                             wordsPerSecond < expectedWordsPerSecond * 0.8 ? 'too-slow' : 'normal';
-                             
-            if (paceState !== currentSegment.state) {
-                if (currentSegment.words.length > 0) {
-                    paceAnalysis.push(currentSegment);
-                }
-                currentSegment = {
-                    start: prevTime - firstTime,
-                    end: word.lastMatchTime - firstTime,
-                    state: paceState,
-                    words: [word.word]
-                };
-            } else {
-                currentSegment.end = word.lastMatchTime - firstTime;
-                currentSegment.words.push(word.word);
+            // Calculate expected time for this sentence
+            const expectedTime = (sentenceLength / spokenWords.length) * targetTime;
+            
+            // Analyze pace and clarity
+            const missedWords = sentenceSpokenWords.filter(w => w.state === 'missed').length;
+            const missedRatio = missedWords / sentenceLength;
+            
+            let state = '.normal';
+            if (missedRatio > 0.3) {
+                state = '.unclear';
+            } else if (actualTime < expectedTime * 0.7) {
+                state = '.too-fast';
+            } else if (actualTime > expectedTime * 1.3) {
+                state = '.too-slow';
             }
+            
+            paceAnalysis.push({
+                start: (sentenceStart - firstTime) / 1000,
+                end: (sentenceEnd - firstTime) / 1000,
+                words: sentenceWords,
+                expectedTime,
+                actualTime,
+                state
+            });
         }
+        
+        wordIndex += sentenceLength;
     });
-    
-    if (currentSegment.words.length > 0) {
-        paceAnalysis.push(currentSegment);
-    }
 
     return {
         totalWords,
-        missedWords,
         skippedWords,
         spokenWordsCount,
-        missedPercentage: (missedWords / totalWords * 100).toFixed(1),
         skippedPercentage: (skippedWords / totalWords * 100).toFixed(1),
         accuracyPercentage: (spokenWordsCount / totalWords * 100).toFixed(1),
         targetTime,

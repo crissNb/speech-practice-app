@@ -60,6 +60,7 @@ function checkSpeechRecognitionSupport() {
 
 function addListeners() {
     recordButton.addEventListener('click', function() {
+        const that = this;
         if (!isRecording) {
             // check if script is empty
             if (!scriptInput.value.trim()) {
@@ -86,6 +87,9 @@ function addListeners() {
                     targetTime.value = estimatedSeconds;
                     modal.style.display = 'none';
                     startRecording();
+                    that.textContent = 'Stop Recording';
+                    that.classList.add('recording');
+                    scriptInput.disabled = true;
                 };
                 
                 document.getElementById('cancelModal').onclick = function() {
@@ -98,12 +102,13 @@ function addListeners() {
             startRecording();
             this.textContent = 'Stop Recording';
             this.classList.add('recording');
+            scriptInput.disabled = true;
         } else {
             stopRecording();
             this.textContent = 'Start Recording';
             this.classList.remove('recording');
+            scriptInput.disabled = false;
         }
-        isRecording = !isRecording;
     });
 
     scriptInput.addEventListener('input', function() {
@@ -119,6 +124,7 @@ function addListeners() {
 
 function startRecording() {
     recognition.start();
+    isRecording = true;
     currentWordIndex = 0;
     scriptWords = scriptInput.value.trim().split(/[\s-]+/);
     spokenWords = [];
@@ -142,8 +148,9 @@ function updateScriptDisplay(text) {
 function stopRecording() {
     recognition.stop();
     timer.stop();
+    isRecording = false;
 
-    const results = analyzeResults(spokenWords, targetTime);
+    const results = analyzeResults(spokenWords, targetTime, scriptInput.value);
     showResults(results);
 }
 
@@ -155,9 +162,6 @@ function showResults(results) {
     
     document.getElementById('timingResult').innerHTML = 
         `${results.actualDuration}s / ${results.targetTime}s<br><small>actual/target time</small>`;
-    
-    document.getElementById('missedResult').innerHTML = 
-        `${results.missedPercentage}%<br><small>${results.missedWords} words</small>`;
     
     document.getElementById('skippedResult').innerHTML = 
         `${results.skippedPercentage}%<br><small>${results.skippedWords} words</small>`;
