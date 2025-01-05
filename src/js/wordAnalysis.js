@@ -1,71 +1,90 @@
 const PUNCTUATION_REGEX = /[^\w\s]|_/g;
+/**
+ * Initializes word states from script
+ * @param {string[]} script 
+ * @returns {WordState[]}
+ */
+function initializeWordStates(script) {
+    return script.map(word => ({
+        word: word.replace(PUNCTUATION_REGEX, '').toLowerCase().trim(),
+        state: "unspoken",
+        lastMatchTime: 0
+    }));
+}
 
+function _findLastSpokenWord(wordStates) {
+    const currentTime = Date.now();
+    for (let i = wordStates.length - 1; i >= 0; i--) {
+        if (wordStates[i].state === "spoken") {
+            return {
+                index: i,
+                time: wordStates[i].lastMatchTime
+            };
+        }
+    }
+    return { index: 0, time: currentTime };
+}
+
+
+function _removeSpokenWords(wordStates, words) {
+    for (const state of wordStates) {
+        const index = words.findIndex(word => 
+            state.word === word.toLowerCase() && state.state === "spoken"
+        );
+        if (index !== -1) {
+            words.splice(index, 1);
+        }
+    }
+}
+
+/**
+ * Match spoken words with script words
+ * @param {string[]} script
+ * @param {string[]} words 
+ * @param {WordState[]} wordStates 
+ * @param {number} minSpeakTimeThreshold 
+ * @param {number} minSkipThreshold 
+ * @returns {WordState[]}
+ */
 function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minSkipThreshold = 3) {
-    // Initialize wordStates array if it doesn't exist
-    if (!wordStates || wordStates.length === 0) {
-        wordStates = script.map(word => ({
-            word: word.replace(PUNCTUATION_REGEX, '').toLowerCase().trim(),
-            state: "unspoken",
-            lastMatchTime: 0
-        }));
+    if (!wordStates?.length) {
+        wordStates = initializeWordStates(script);
     }
 
-    if (words.length === 0) {
+    if (!words.length) {
         return wordStates;
     }
 
-    // Get last spoken word in lowercase
     const currentTime = Date.now();
+    const { index: lastSpokenIndex } = _findLastSpokenWord(wordStates);
+    
+    _removeSpokenWords(wordStates, words);
 
-    // Find last word that was spoken
-    let lastSpokenIndex = 0;
-    let lastSpokenTime = currentTime;
-    for (let k = wordStates.length - 1; k >= 0; k--) {
-        if (wordStates[k].state === "spoken") {
-            lastSpokenTime = wordStates[k].lastMatchTime;
-            lastSpokenIndex = k;
-            break;
-        }
-    }
-
-    // Remove words that have already been spoken
-    for (let i = 0; i < wordStates.length; i++) {
-        for (let j = 0; j < words.length; j++) {
-            if (wordStates[i].word === words[j].toLowerCase() && wordStates[i].state === "spoken") {
-                words.splice(j, 1);
-                break;
-            }
-        }
-    }
-
-    let skipCounter = 0;
-
-    // Find matching word in script
-    for (let j = 0; j < words.length; j++) {
+    for (const word of words) {
+        const wordLower = word.toLowerCase();
+        
         for (let i = 0; i < wordStates.length; i++) {
-            if (wordStates[i].word === words[j].toLowerCase() && wordStates[i].state !== "skipped" && wordStates[i].state !== "spoken") {
-                // Check if user is skipping words
-                if (currentTime - lastSpokenTime < minSpeakTimeThreshold * (i - lastSpokenIndex) && i - lastSpokenIndex > minSkipThreshold) {
-                    skipCounter++;
-                    if (skipCounter > minSkipThreshold) {
-                        // User has skipped words and said the matching words more than three times
-                        for (let k = lastSpokenIndex + 1; k < i - minSkipThreshold; k++) {
-                            if (wordStates[k].state === "unspoken") {
-                                updateWordStates(wordStates[k], "skipped", currentTime);
-                            }
+            const state = wordStates[i];
+            
+            if (state.word === wordLower && state.state !== "skipped" && state.state !== "spoken") {
+                // Check if spoken word is skipped
+                const timeDiff = currentTime - wordStates[lastSpokenIndex].lastMatchTime;
+                const wordDiff = currentIndex - lastSpokenIndex;
+                
+                if (timeDiff < minSpeakTimeThreshold * wordDiff && wordDiff > minSkipThreshold) {
+                    for (let k = lastSpokenIndex + 1; k < i - minSkipThreshold; k++) {
+                        if (wordStates[i].state === "unspoken") {
+                            _updateWordStates(wordStates[i], "skipped", currentTime);
                         }
-                    } else {
-                        break;
                     }
                 }
-
-                // Mark word as spoken and update timestamp
-                updateWordStates(wordStates[i], "spoken", currentTime);
-
+                
+                _updateWordStates(state, "spoken", currentTime);
+                
                 // Mark previous unspoken words as missed
                 for (let k = 0; k < i; k++) {
                     if (wordStates[k].state === "unspoken") {
-                        updateWordStates(wordStates[k], "missed", currentTime);
+                        _updateWordStates(wordStates[k], "missed", currentTime);
                     }
                 }
                 break;
@@ -76,7 +95,7 @@ function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minS
     return wordStates;
 }
 
-function updateWordStates(wordState, newWordState, matchTime) {
+function _updateWordStates(wordState, newWordState, matchTime) {
     if (wordState.state === newWordState) {
         return wordState;
     }
@@ -87,10 +106,24 @@ function updateWordStates(wordState, newWordState, matchTime) {
 }
 
 
+/**
+ * Caluclate word count in a script
+ * @param {string[]} script 
+ * @returns {number}
+ */
 function calculateWordCount(script) {
+    if (!script) {
+        return 0;
+    }
     return script.split(' ').length;
 }
 
+/**
+ * Calculate estimated speech length based on word count and average word duration
+ * @param {string[]} script 
+ * @param {number} averageWordDuration 
+ * @returns {number}
+ */
 function estimateSpeechLength(script, averageWordDuration = 0.5) {
     if (!script) {
         return 0;
@@ -99,6 +132,13 @@ function estimateSpeechLength(script, averageWordDuration = 0.5) {
     return wordCount * averageWordDuration;
 }
 
+/**
+ * Analyze spoken words and calculate results
+ * @param {WordState[]} spokenWords 
+ * @param {number} targetTime 
+ * @param {string[]} originalScript 
+ * @returns {Object} data analysis results
+ */
 function analyzeResults(spokenWords, targetTime, originalScript) {
     const totalWords = spokenWords.length;
     const skippedWords = spokenWords.filter(w => w.state === 'skipped').length;
@@ -135,13 +175,13 @@ function analyzeResults(spokenWords, targetTime, originalScript) {
             const missedWords = sentenceSpokenWords.filter(w => w.state === 'missed').length;
             const missedRatio = missedWords / sentenceLength;
             
-            let state = '.normal';
+            let state = 'normal';
             if (missedRatio > 0.3) {
-                state = '.unclear';
+                state = 'unclear';
             } else if (actualTime < expectedTime * 0.7) {
-                state = '.too-fast';
+                state = 'too-fast';
             } else if (actualTime > expectedTime * 1.3) {
-                state = '.too-slow';
+                state = 'too-slow';
             }
             
             paceAnalysis.push({

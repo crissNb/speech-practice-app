@@ -84,7 +84,7 @@ function addListeners() {
                 
                 // user can also use estimated time as target time, if not provided
                 document.getElementById('useEstimatedTime').onclick = function() {
-                    targetTime.value = estimatedSeconds;
+                    targetTime = estimatedSeconds;
                     modal.style.display = 'none';
                     startRecording();
                     that.textContent = 'Stop Recording';
@@ -209,13 +209,16 @@ function realTimeFeedback() {
     
     const expectedWordsAtCurrentTime = (totalWords * elapsedTime) / targetTime;
     
-    if (missedRatio > 0.3) { // If more than 30% of last 20 words were missed
+    if (missedRatio > 0.3) {
+        // If more than 30% of last 20 words were missed
         feedbackElement.textContent = 'Speak more clearly!';
         feedbackElement.className = 'feedback too-unclear';
     } else if (wordsSpoken < expectedWordsAtCurrentTime - 5) {
+        // If spoken words are more than 5 words behind expected words
         feedbackElement.textContent = 'Speak faster!';
         feedbackElement.className = 'feedback too-slow';
     } else if (wordsSpoken > expectedWordsAtCurrentTime + 5) {
+        // If spoken words are more than 5 words ahead of expected words
         feedbackElement.textContent = 'Speak slower!';
         feedbackElement.className = 'feedback too-fast';
     } else {
