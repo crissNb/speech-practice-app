@@ -158,13 +158,13 @@ function showResults(results) {
     const resultsModal = document.getElementById('resultsModal');
     
     document.getElementById('accuracyResult').innerHTML = 
-        `${results.accuracyPercentage}%<br><small>of words spoken correctly</small>`;
-    
+            `<span class="value">${results.accuracyPercentage}%</span><small>of words spoken correctly</small>`;
+        
     document.getElementById('timingResult').innerHTML = 
-        `${results.actualDuration}s / ${results.targetTime}s<br><small>actual/target time</small>`;
-    
+            `<span class="value">${results.actualDuration}s / ${results.targetTime}s</span><small>actual/target time</small>`;
+        
     document.getElementById('skippedResult').innerHTML = 
-        `${results.skippedPercentage}%<br><small>${results.skippedWords} words</small>`;
+            `<span class="value">${results.skippedPercentage}%</span><small>${results.skippedWords} words</small>`;
     
     const timeline = document.getElementById('paceTimeline');
     timeline.innerHTML = results.paceAnalysis.map(segment => `

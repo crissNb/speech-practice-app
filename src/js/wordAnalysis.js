@@ -69,7 +69,7 @@ function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minS
             if (state.word === wordLower && state.state !== "skipped" && state.state !== "spoken") {
                 // Check if spoken word is skipped
                 const timeDiff = currentTime - wordStates[lastSpokenIndex].lastMatchTime;
-                const wordDiff = currentIndex - lastSpokenIndex;
+                const wordDiff = i - lastSpokenIndex;
                 
                 if (timeDiff < minSpeakTimeThreshold * wordDiff && wordDiff > minSkipThreshold) {
                     for (let k = lastSpokenIndex + 1; k < i - minSkipThreshold; k++) {
