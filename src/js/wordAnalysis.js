@@ -60,6 +60,8 @@ function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minS
     
     _removeSpokenWords(wordStates, words);
 
+    let skipCounter = 0;
+
     for (const word of words) {
         const wordLower = word.toLowerCase();
         
@@ -67,18 +69,21 @@ function matchWords(script, words, wordStates, minSpeakTimeThreshold = 300, minS
             const state = wordStates[i];
             
             if (state.word === wordLower && state.state !== "skipped" && state.state !== "spoken") {
-                // Check if spoken word is skipped
-                const timeDiff = currentTime - wordStates[lastSpokenIndex].lastMatchTime;
-                const wordDiff = i - lastSpokenIndex;
-                
-                if (timeDiff < minSpeakTimeThreshold * wordDiff && wordDiff > minSkipThreshold) {
-                    for (let k = lastSpokenIndex + 1; k < i - minSkipThreshold; k++) {
-                        if (wordStates[i].state === "unspoken") {
-                            _updateWordStates(wordStates[i], "skipped", currentTime);
+                // Check if user is skipping words
+                if (currentTime - wordStates[lastSpokenIndex].lastMatchTime < minSpeakTimeThreshold * (i - lastSpokenIndex) && i - lastSpokenIndex > minSkipThreshold) {
+                    skipCounter++;
+                    if (skipCounter > minSkipThreshold) {
+                        // User has skipped words and said the matching words more than three times
+                        for (let k = lastSpokenIndex + 1; k < i - minSkipThreshold; k++) {
+                            if (wordStates[k].state === "unspoken") {
+                                updateWordStates(wordStates[k], "skipped", currentTime);
+                            }
                         }
+                    } else {
+                        break;
                     }
                 }
-                
+
                 _updateWordStates(state, "spoken", currentTime);
                 
                 // Mark previous unspoken words as missed

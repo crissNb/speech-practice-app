@@ -248,7 +248,7 @@ h1 {
 }
 
 #okWarning {
-    background-color: #4CAF50;
+    background-color: var(--primary-color);
     color: white;
     padding: 0.5rem 2rem;
 }
@@ -259,7 +259,12 @@ h1 {
 }
 
 #useEstimatedTime {
-    background-color: #4CAF50;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#closeResults {
+    background-color: var(--primary-color);
     color: white;
 }
 
