@@ -27,6 +27,7 @@ class Timer {
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
+            
         }
     }
 
